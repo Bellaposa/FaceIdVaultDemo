@@ -1,0 +1,45 @@
+LAContext analysis — evidence that evaluatePolicy is a thin XPC client
+Binary: LocalAuthentication.framework (iOS 26.5 Simulator runtime, arm64)
+Tools: nm, otool. No Apple binary redistributed; reproduce locally.
+
+===================================================================
+1) LAContext is backed by XPC: its ivars are NSXPCConnection + a
+   remote proxy typed against the LAContextXPC protocol.
+===================================================================
+                instanceMethods 0x33ba8 __OBJC_$_PROTOCOL_INSTANCE_METHODS_LAContextXPC
+                name      0x3a3b6 LAContextXPC
+                protocols 0x4dfd8 __OBJC_$_PROTOCOL_REFS_LAContextXPC
+            attributes 0x3b1e9 T@"NSObject<LAContextXPC>",&,N,V_remoteContext
+            attributes 0x3b318 T@"<LACSecureStorageService>",R,N,V_remoteObjectProxy
+            attributes 0x3ba05 T@"NSObject<LAContextXPC>",R,N,V_synchronousRemoteContext
+            attributes 0x3bb74 T@"NSXPCConnection",R,N,V_connection
+            attributes 0x3bb99 T@"NSXPCConnection",R,N,V_serverConnection
+            imp     0xfffdf0fc (0x104cc) -[LAClient _synchronousRemoteObjectProxy:performCall:]
+            imp     0xfffe79c0 (0x1ac38) -[LAStorage remoteObjectProxy]
+            list[0]  0x561f8 __OBJC_PROTOCOL_$_LAContextXPC
+            name       0x3ffd3 remoteObjectProxy
+            name      0x3c8d3 _remoteObjectProxy
+            offset    0x541b4 _OBJC_IVAR_$_LAStorage._remoteObjectProxy 40
+            type      0x42a1e @"NSObject<LAContextXPC>"
+    0x3cb4b _synchronousRemoteObjectProxy:performCall:
+    0x3ffd3 remoteObjectProxy
+    0x3ffe5 remoteObjectProxyWithErrorHandler:
+    0x416d9 synchronousRemoteObjectProxyWithErrorHandler:
+    instanceMethods 0x33ba8 __OBJC_$_PROTOCOL_INSTANCE_METHODS_LAContextXPC
+
+===================================================================
+2) The public entry point just forwards down to XPC. Call chain
+   reconstructed from the disassembly:
+===================================================================
+-[LAContext evaluatePolicy:localizedReason:reply:]        (0x23f10)
+  -> builds options NSDictionary, calls newCommandId
+  -> _evaluatePolicy:options:log:cid:synchronous:reply:   (0x23500)
+  -> _evaluatePolicy:options:synchronous:reply:           (0x23960)
+  -> -[LAClient evaluatePolicy:options:uiDelegate:synchronous:reply:] (0x12104)
+  -> -[LAClient _performSynchronous:callId:finally:]
+       -> _recoverConnectionIfNeeded
+       -> setRemoteContext:
+       -> talks over NSXPCConnection  (no biometric logic in-process)
+
+Key instruction (forwarding) inside evaluatePolicy:localizedReason:reply::
+000000000002402c	bl	"_objc_msgSend$_evaluatePolicy:options:log:cid:synchronous:reply:"

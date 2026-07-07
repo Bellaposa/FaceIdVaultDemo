@@ -1,0 +1,33 @@
+name: FaceIDVaultDemo
+options:
+  bundleIdPrefix: com.bellaposa
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+targets:
+  FaceIDVaultDemo:
+    type: application
+    platform: iOS
+    sources:
+      - App
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Vault Demo
+        UILaunchScreen: {}
+        NSFaceIDUsageDescription: "Unlock your vault with Face ID"
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.bellaposa.faceidvaultdemo
+        GENERATE_INFOPLIST_FILE: NO
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.0"
+        SWIFT_OBJC_BRIDGING_HEADER: App/FaceIDVaultDemo-Bridging-Header.h
+      configs:
+        Debug:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "DEBUG EMBEDDED_BYPASS"
+        Release:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "EMBEDDED_BYPASS"
