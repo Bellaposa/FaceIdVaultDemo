@@ -232,7 +232,7 @@ Now the two results make total sense. The bypass wins precisely when an app trea
 
 ## Try it yourself
 
-The whole lab — the two-vault SwiftUI app, the injectable dylib, a Frida version of the hook, the Sideloadly IPA scripts, and the headless self-test — is on GitHub: **[repo link]**. Clone it, inject the dylib into your own build with Sideloadly, and *feel* the difference between UI security and hardware-backed security. That contrast is the entire point.
+The whole lab — the two-vault SwiftUI app, the injectable dylib, a Frida version of the hook, the Sideloadly IPA scripts, and the headless self-test — is on GitHub: **[github.com/Bellaposa/FaceIdVaultDemo](https://github.com/Bellaposa/FaceIdVaultDemo)**. Clone it, inject the dylib into your own build with Sideloadly, and *feel* the difference between UI security and hardware-backed security. That contrast is the entire point.
 
 ---
 
