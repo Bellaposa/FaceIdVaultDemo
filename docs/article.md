@@ -2,6 +2,16 @@
 
 ### I injected a dylib into an iOS app to fake a successful Face ID scan — no jailbreak required. It worked perfectly. And it also protected nothing. Here's the difference, all the way down to the Secure Enclave.
 
+> **Medium — images to upload** (from the repo's `docs/` folder):
+> 1. `demo.gif` — full demo (GIF at the top of the demo section)
+> 2. `naive_01_locked.png` — Naive Vault locked
+> 3. `naive_02_bypassed.png` — Naive Vault bypassed with no Face ID
+> 4. `secure_01_seeded.png` — Secure Vault after Seed
+> 5. `secure_02_faceid_required.png` — real Face ID prompt appears
+> 6. `secure_03_released.png` — secret released after a genuine match
+>
+> **Suggested Medium cover:** `naive_02_bypassed.png`
+
 ---
 
 If you've spent any time reverse engineering iOS apps, you've seen this advice. It shows up on Stack Overflow, in Telegram groups, in every "how to bypass biometric auth" thread:
@@ -110,24 +120,55 @@ No jailbreak, no paid developer account (the free signature just expires after 7
 
 Here's the whole thing on a real, non-jailbroken iPhone with the dylib injected via Sideloadly:
 
+**Figure 1 — full demo (GIF)**
+
 ![Naive vault bypassed instantly, secure vault demands a real Face ID scan](demo.gif)
+
+*File: `docs/demo.gif`*
+
+---
 
 ### Naive Vault: opens with no face at all
 
 I tap **Unlock with Face ID**… and the biometric sheet never appears. The secret is just *there*.
 
+**Figure 2 — Naive Vault locked**
+
 ![Naive Vault locked, showing the Unlock button](naive_01_locked.png)
+
+*Naive Vault locked, showing the Unlock button — file: `docs/naive_01_locked.png`*
+
+**Figure 3 — Naive Vault bypassed (no Face ID)**
+
 ![Naive Vault unlocked instantly, secret SUPER-SECRET-42-NAIVE revealed with no Face ID prompt](naive_02_bypassed.png)
 
+*Naive Vault unlocked instantly — secret `SUPER-SECRET-42-NAIVE` revealed with no Face ID prompt — file: `docs/naive_02_bypassed.png`*
+
 The forged `YES` walked straight through the app's `if success` branch. No sensor was ever consulted. Total win — this is the bypass everyone talks about, working exactly as advertised.
+
+---
 
 ### Secure Vault: the forged boolean is ignored
 
 Now the *same injected dylib* hits the Secure Vault. I tap **Seed secret**, then **Read with Face ID** — and iOS puts up a **real Face ID scan** that my hook can't skip. Only my actual face releases the secret; the log even says *"Secure Enclave released the key."*
 
+**Figure 4 — Secure Vault after Seed**
+
 ![Secure Vault after seeding the secret behind .biometryCurrentSet](secure_01_seeded.png)
+
+*Secret stored behind `.biometryCurrentSet` — file: `docs/secure_01_seeded.png`*
+
+**Figure 5 — real Face ID (the dylib can't skip it)**
+
 ![Secure Vault triggering a real Face ID scan that the injected boolean cannot bypass](secure_02_faceid_required.png)
+
+*Real Face ID scan — the injected boolean cannot bypass this — file: `docs/secure_02_faceid_required.png`*
+
+**Figure 6 — secret released only after a genuine match**
+
 ![Secure Vault revealing SUPER-SECRET-42-SECURE only after a genuine Face ID match](secure_03_released.png)
+
+*Secret `SUPER-SECRET-42-SECURE` revealed only after a genuine Face ID match — file: `docs/secure_03_released.png`*
 
 Same hook, same process, two completely opposite outcomes. On the naive vault my fake `YES` was the key to the kingdom. On the secure vault it was worth nothing — the phone demanded a genuine biometric match before it would give up a single byte.
 
